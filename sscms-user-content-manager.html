@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户内容管理中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-name {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .content-area {
+            padding: 30px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 300px;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e9ecef;
+            color: #212529;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            color: #212529;
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: #e9ecef;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            color: #6c757d;
+        }
+
+        .close-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            padding: 20px 30px;
+            border-top: 2px solid #e9ecef;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: #f8f9fa;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 40px);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #212529;
+            font-size: 26px;
+        }
+
+        .login-box .form-group {
+            margin-bottom: 25px;
+        }
+
+        .login-box .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .pagination button {
+            padding: 8px 14px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #e9ecef;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .search-input {
+                flex: 1;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            th, td {
+                padding: 10px 12px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录页面 -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <h2>用户登录</h2>
+            <div id="loginAlert"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>用户名 / 邮箱 / 手机</label>
+                    <input type="text" class="form-control" id="loginAccount" required placeholder="请输入账户信息">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" class="form-control" id="loginPassword" required placeholder="请输入密码">
+                </div>
+                <button type="submit" class="btn btn-primary">登录</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div id="mainPage" class="container hidden">
+        <div class="header">
+            <h1>用户内容管理中心</h1>
+            <div class="user-info">
+                <span class="user-name">欢迎，<span id="displayUserName">用户</span></span>
+                <button class="btn btn-secondary" onclick="logout()">退出登录</button>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div id="mainAlert"></div>
+
+            <div class="toolbar">
+                <button class="btn btn-primary" onclick="openModal('add')">
+                    + 发布新内容
+                </button>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchKeyword" placeholder="搜索内容标题...">
+                    <button class="btn btn-secondary" onclick="searchContents()">搜索</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div id="loadingState" class="loading hidden">正在加载内容...</div>
+                <div id="emptyState" class="empty-state hidden">
+                    <h3>暂无内容</h3>
+                    <p>点击"发布新内容"开始创建</p>
+                </div>
+                <table id="contentTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>标题</th>
+                            <th>栏目</th>
+                            <th>状态</th>
+                            <th>发布时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contentTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="pagination" class="pagination hidden">
+                <button id="prevBtn" onclick="prevPage()">上一页</button>
+                <span id="pageInfo"></span>
+                <button id="nextBtn" onclick="nextPage()">下一页</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑内容弹窗 -->
+    <div id="contentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">发布新内容</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="contentForm">
+                    <input type="hidden" id="contentId">
+                    <div class="form-group">
+                        <label>选择栏目 *</label>
+                        <select class="form-control" id="channelId" required>
+                            <option value="">请选择栏目</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>内容标题 *</label>
+                        <input type="text" class="form-control" id="contentTitle" required placeholder="请输入内容标题">
+                    </div>
+                    <div class="form-group">
+                        <label>内容摘要</label>
+                        <textarea class="form-control" id="contentSummary" placeholder="请输入内容摘要（可选）"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>详细内容 *</label>
+                        <textarea class="form-control" id="contentBody" required placeholder="请输入详细内容"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" id="submitBtn" onclick="submitContent()">发布</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看内容弹窗 -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>内容详情</h2>
+                <button class="close-btn" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewContent">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeViewModal()">关闭</button>
+                <button class="btn btn-primary" onclick="editFromView()">编辑</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局配置 - 请根据实际情况修改
+        const CONFIG = {
+            API_BASE: '', // SSCMS API基础路径，空白表示使用当前域名
+            SITE_ID: 1,   // 站点ID，需要根据实际情况修改
+            pageSize: 10,
+            currentPage: 1,
+            totalPages: 1,
+            currentUser: null,
+            currentContents: [],
+            currentContentId: null
+        };
+
+        // 用户认证状态管理
+        let authToken = localStorage.getItem('sscms_auth_token');
+        let userInfo = JSON.parse(localStorage.getItem('sscms_user_info') || 'null');
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        function initializePage() {
+            if (authToken && userInfo) {
+                showMainPage();
+                loadChannels();
+                loadContents();
+            } else {
+                showLoginPage();
+            }
+
+            // 登录表单提交
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // 搜索回车事件
+            document.getElementById('searchKeyword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchContents();
+                }
+            });
+        }
+
+        // 显示登录页面
+        function showLoginPage() {
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('mainPage').classList.add('hidden');
+        }
+
+        // 显示主页面
+        function showMainPage() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('mainPage').classList.remove('hidden');
+            document.getElementById('displayUserName').textContent = userInfo?.userName || '用户';
+        }
+
+        // 处理用户登录
+        async function handleLogin(e) {
+            e.preventDefault();
+            const account = document.getElementById('loginAccount').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/api/v1/users/actions/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        account: account,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.token || data.apiKey;
+                    userInfo = data.user || data;
+                    
+                    localStorage.setItem('sscms_auth_token', authToken);
+                    localStorage.setItem('sscms_user_info', JSON.stringify(userInfo));
+                    
+                    showAlert('loginAlert', '登录成功！正在跳转...', 'success');
+                    setTimeout(() => {
+                        showMainPage();
+                        loadChannels();
+                        loadContents();
+                    }, 1000);
+                } else {
+                    showAlert('loginAlert', data.message || '登录失败，请检查账户信息', 'error');
+                }
+            } catch (error) {
+                console.error('登录错误:', error);
+                showAlert('loginAlert', '网络错误，请稍后重试', 'error');
+            }
+        }
+
+        // 用户退出登录
+        async function logout() {
+            if (confirm('确定要退出登录吗？')) {
+                try {
+                    await fetch(`${CONFIG.API_BASE}/api/v1/users/actions/logout`, {
+                        method: 'POST',
+                        headers: getAuthHeaders()
+                    });
+                } catch (error) {
+                    console.error('退出登录错误:', error);
+                }
+
+                authToken = null;
+                userInfo = null;
+                localStorage.removeItem('sscms_auth_token');
+                localStorage.removeItem('sscms_user_info');
+                
+                showLoginPage();
+            }
+        }
+
+        // 获取认证头
+        function getAuthHeaders() {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (authToken) {
+                headers['X-SS-API-KEY'] = authToken;
+            }
+            return headers;
+        }
+
+        // 加载栏目列表
+        async function loadChannels() {
+            try {
+                const response = await fetch(
+                    `${CONFIG.API_BASE}/api/v1/channels/${CONFIG.SITE_ID}`,
+                    { headers: getAuthHeaders() }
+                );
+                
+                if (response.ok) {
+                    const channels = await response.json();
+                    populateChannelSelect(channels);
+                }
+            } catch (error) {
+                console.error('加载栏目失败:', error);
+            }
+        }
+
+        // 填充栏目下拉框
+        function populateChannelSelect(channels) {
+            const select = document.getElementById('channelId');
+            select.innerHTML = '<option value="">请选择栏目</option>';
+            
+            if (Array.isArray(channels)) {
+                channels.forEach(channel => {
+                    const option = document.createElement('option');
+                    option.value = channel.id || channel.channelId;
+                    option.textContent = channel.channelName || channel.name;
+                    option.dataset.parentId = channel.parentId || 0;
+                    select.appendChild(option);
+                });
+            }
+        }
+
+        // 加载内容列表
+        async function loadContents(page = 1) {
+            const loading = document.getElementById('loadingState');
+            const empty = document.getElementById('emptyState');
+            const table = document.getElementById('contentTable');
+            
+            loading.classList.remove('hidden');
+            empty.classList.add('hidden');
+            table.style.display = 'none';
+
+            try {
+                const keyword = document.getElementById('searchKeyword').value;
+                let url = `${CONFIG.API_BASE}/api/v1/contents?siteId=${CONFIG.SITE_ID}&page=${page}&pageSize=${CONFIG.pageSize}`;
+                
+                if (keyword) {
+                    url += `&keyword=${encodeURIComponent(keyword)}`;
+                }
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        siteId: CONFIG.SITE_ID,
+                        userName: userInfo?.userName || userInfo?.account
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const contents = data.contents || data.items || [];
+                    
+                    // 筛选当前用户的内容
+                    const userContents = filterUserContents(contents);
+                    
+                    CONFIG.currentContents = userContents;
+                    CONFIG.currentPage = page;
+                    CONFIG.totalPages = Math.ceil((data.total || userContents.length) / CONFIG.pageSize);
+                    
+                    renderContentTable(userContents);
+                    
+                    if (userContents.length === 0) {
+                        empty.classList.remove('hidden');
+                        table.style.display = 'none';
+                    } else {
+                        table.style.display = 'table');
+                        updatePagination();
+                    }
+                } else {
+                    showAlert('mainAlert', '加载内容失败', 'error');
+                }
+            } catch (error) {
+                console.error('加载内容错误:', error);
+                showAlert('mainAlert', '网络错误，请稍后重试', 'error');
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // 筛选当前用户的内容
+        function filterUserContents(contents) {
+            const userName = userInfo?.userName || userInfo?.account || userInfo?.mobile || '';
+            return contents.filter(content => {
+                return content.addUserName === userName || 
+                       content.userName === userName ||
+                       content.author === userName;
+            });
+        }
+
+        // 渲染内容表格
+        function renderContentTable(contents) {
+            const tbody = document.getElementById('contentTableBody');
+            tbody.innerHTML = '';
+
+            contents.forEach(content => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${content.id}</td>
+                    <td>
+                        <a href="javascript:void(0)" onclick="viewContent(${content.id})" style="color: #667eea; text-decoration: none; font-weight: 500;">
+                            ${escapeHtml(content.title)}
+                        </a>
+                    </td>
+                    <td>${escapeHtml(content.channelName || content.channel || '未分类')}</td>
+                    <td>
+                        <span class="status-badge ${getStatusClass(content.checked, content.isChecked)}">
+                            ${getStatusText(content.checked, content.isChecked)}
+                        </span>
+                    </td>
+                    <td>${formatDate(content.addDate || content.addDateTime)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-secondary" onclick="viewContent(${content.id})">查看</button>
+                            <button class="btn btn-sm btn-primary" onclick="editContent(${content.id})">编辑</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteContent(${content.id})">删除</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 获取状态样式类
+        function getStatusClass(checked, isChecked) {
+            if (checked || isChecked) return 'status-approved';
+            return 'status-pending';
+        }
+
+        // 获取状态文本
+        function getStatusText(checked, isChecked) {
+            if (checked || isChecked) return '已审核';
+            return '待审核';
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 更新分页
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const pageInfo = document.getElementById('pageInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (CONFIG.totalPages <= 1) {
+                pagination.classList.add('hidden');
+                return;
+            }
+
+            pagination.classList.remove('hidden');
+            pageInfo.textContent = `第 ${CONFIG.currentPage} / ${CONFIG.totalPages} 页`;
+            prevBtn.disabled = CONFIG.currentPage <= 1;
+            nextBtn.disabled = CONFIG.currentPage >= CONFIG.totalPages;
+        }
+
+        // 分页控制
+        function prevPage() {
+            if (CONFIG.currentPage > 1) {
+                loadContents(CONFIG.currentPage - 1);
+            }
+        }
+
+        function nextPage() {
+            if (CONFIG.currentPage < CONFIG.totalPages) {
+                loadContents(CONFIG.currentPage + 1);
+            }
+        }
+
+        // 搜索内容
+        function searchContents() {
+            loadContents(1);
+        }
+
+        // 打开弹窗
+        function openModal(type, contentId = null) {
+            const modal = document.getElementById('contentModal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('contentForm');
+            
+            form.reset();
+            document.getElementById('contentId').value = '';
+
+            if (type === 'add') {
+                title.textContent = '发布新内容';
+                document.getElementById('submitBtn').textContent = '发布';
+            } else if (type === 'edit') {
+                title.textContent = '编辑内容';
+                document.getElementById('submitBtn').textContent = '保存修改';
+                loadContentForEdit(contentId);
+            }
+
+            modal.classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('contentModal').classList.remove('show');
+        }
+
+        // 加载内容进行编辑
+        async function loadContentForEdit(contentId) {
+            const content = CONFIG.currentContents.find(c => c.id === contentId);
+            if (content) {
+                document.getElementById('contentId').value = content.id;
+                document.getElementById('channelId').value = content.channelId || content.channelId;
+                document.getElementById('contentTitle').value = content.title;
+                document.getElementById('contentSummary').value = content.summary || content.description || '';
+                document.getElementById('contentBody').value = content.body || content.content || content.text || '';
+            }
+        }
+
+        // 查看内容详情
+        async function viewContent(contentId) {
+            const content = CONFIG.currentContents.find(c => c.id === contentId);
+            if (content) {
+                CONFIG.currentContentId = contentId;
+                const viewContent = document.getElementById('viewContent');
+                viewContent.innerHTML = `
+                    <div style="line-height: 1.8;">
+                        <p style="margin-bottom: 15px;"><strong>标题：</strong>${escapeHtml(content.title)}</p>
+                        <p style="margin-bottom: 15px;"><strong>栏目：</strong>${escapeHtml(content.channelName || '未分类')}</p>
+                        <p style="margin-bottom: 15px;"><strong>状态：</strong>
+                            <span class="status-badge ${getStatusClass(content.checked, content.isChecked)}">
+                                ${getStatusText(content.checked, content.isChecked)}
+                            </span>
+                        </p>
+                        <p style="margin-bottom: 15px;"><strong>发布时间：</strong>${formatDate(content.addDate || content.addDateTime)}</p>
+                        ${content.summary ? `<p style="margin-bottom: 15px;"><strong>摘要：</strong>${escapeHtml(content.summary)}</p>` : ''}
+                        <hr style="margin: 20px 0; border: none; border-top: 1px solid #e9ecef;">
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 6px;">
+                            ${content.body || content.content || content.text || '无详细内容'}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('viewModal').classList.add('show');
+            }
+        }
+
+        // 关闭查看弹窗
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.remove('show');
+        }
+
+        // 从查看弹窗编辑
+        function editFromView() {
+            closeViewModal();
+            openModal('edit', CONFIG.currentContentId);
+        }
+
+        // 编辑内容
+        function editContent(contentId) {
+            openModal('edit', contentId);
+        }
+
+        // 提交内容（新增或编辑）
+        async function submitContent() {
+            const contentId = document.getElementById('contentId').value;
+            const channelId = document.getElementById('channelId').value;
+            const title = document.getElementById('contentTitle').value;
+            const summary = document.getElementById('contentSummary').value;
+            const body = document.getElementById('contentBody').value;
+
+            if (!channelId || !title || !body) {
+                showAlert('modalAlert', '请填写必填项', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '提交中...';
+
+            try {
+                let url, method;
+                const payload = {
+                    siteId: CONFIG.SITE_ID,
+                    channelId: parseInt(channelId),
+                    title: title,
+                    summary: summary,
+                    body: body
+                };
+
+                if (contentId) {
+                    url = `${CONFIG.API_BASE}/api/v1/contents/${CONFIG.SITE_ID}/${channelId}/${contentId}/actions/update`;
+                    method = 'POST';
+                } else {
+                    url = `${CONFIG.API_BASE}/api/v1/contents/${CONFIG.SITE_ID}/${channelId}`;
+                    method = 'POST';
+                }
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    closeModal();
+                    showAlert('mainAlert', contentId ? '内容更新成功！' : '内容发布成功！', 'success');
+                    loadContents(CONFIG.currentPage);
+                } else {
+                    const error = await response.json();
+                    showAlert('modalAlert', error.message || '提交失败，请重试', 'error');
+                }
+            } catch (error) {
+                console.error('提交内容错误:', error);
+                showAlert('modalAlert', '网络错误，请稍后重试', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = contentId ? '保存修改' : '发布';
+            }
+        }
+
+        // 删除内容
+        async function deleteContent(contentId) {
+            if (!confirm('确定要删除这条内容吗？此操作不可恢复。')) {
+                return;
+            }
+
+            try {
+                const content = CONFIG.currentContents.find(c => c.id === contentId);
+                const channelId = content?.channelId || CONFIG.SITE_ID;
+
+                const response = await fetch(
+                    `${CONFIG.API_BASE}/api/v1/contents/${CONFIG.SITE_ID}/${channelId}/${contentId}/actions/delete`,
+                    {
+                        method: 'POST',
+                        headers: getAuthHeaders()
+                    }
+                );
+
+                if (response.ok) {
+                    showAlert('mainAlert', '内容删除成功！', 'success');
+                    loadContents(CONFIG.currentPage);
+                } else {
+                    showAlert('mainAlert', '删除失败，请重试', 'error');
+                }
+            } catch (error) {
+                console.error('删除内容错误:', error);
+                showAlert('mainAlert', '网络错误，请稍后重试', 'error');
+            }
+        }
+
+        // 显示提示信息
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="alert alert-${type}">
+                    ${escapeHtml(message)}
+                </div>
+            `;
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // 点击弹窗外部关闭
+        window.onclick = function(event) {
+            const contentModal = document.getElementById('contentModal');
+            const viewModal = document.getElementById('viewModal');
+            
+            if (event.target === contentModal) {
+                closeModal();
+            }
+            if (event.target === viewModal) {
+                closeViewModal();
+            }
+        };
+    </script>
+</body>
+</html>
