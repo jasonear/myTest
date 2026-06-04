@@ -1,0 +1,653 @@
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;SSCMS 数据库调试工具&lt;/title&gt;
+    &lt;style&gt;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #212529;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section h2 span {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            line-height: 32px;
+            border-radius: 50%;
+            font-size: 16px;
+        }
+
+        .section-content {
+            margin-top: 20px;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .code-comment {
+            color: #6a9955;
+        }
+
+        .code-keyword {
+            color: #569cd6;
+        }
+
+        .code-string {
+            color: #ce9178;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .warning-box h4 {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: 14px;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #28a745;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .success-box h4 {
+            color: #155724;
+            margin-bottom: 8px;
+        }
+
+        .success-box p {
+            color: #155724;
+            font-size: 14px;
+        }
+
+        .table-example {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+        }
+
+        .table-example th,
+        .table-example td {
+            border: 1px solid #dee2e6;
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .table-example th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .table-example tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin: 5px 5px 5px 0;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .label {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .label-version {
+            background: #e7f3ff;
+            color: #0066cc;
+        }
+
+        .label-tip {
+            background: #f8f9fa;
+            color: #495057;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: white;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: #495057;
+        }
+
+        .demo-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+        }
+
+        .demo-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="container"&gt;
+        &lt;div class="header"&gt;
+            &lt;h1&gt;SSCMS 数据库调试与表名查询工具&lt;/h1&gt;
+            &lt;p&gt;解决 SSCMS 7.0+ 版本数据库表名变更问题&lt;/p&gt;
+        &lt;/div&gt;
+
+        &lt;div class="content"&gt;
+            &lt;!-- 问题分析 --&gt;
+            &lt;div class="section"&gt;
+                &lt;h2&gt;&lt;span&gt;1&lt;/span&gt; 问题分析&lt;/h2&gt;
+                &lt;div class="section-content"&gt;
+                    &lt;div class="warning-box"&gt;
+                        &lt;h4&gt;⚠️ 错误信息&lt;/h4&gt;
+                        &lt;p&gt;&lt;strong&gt;错误代码：&lt;/strong&gt;42P01: 关系 "siteserver_administrator" 不存在&lt;/p&gt;
+                    &lt;/div&gt;
+                    
+                    &lt;p style="margin-bottom: 15px; color: #495057;"&gt;
+                        在 SSCMS 7.0+ 版本中，数据库表名结构发生了重大变化。旧版本使用 &lt;code&gt;siteserver_&lt;/code&gt; 前缀，
+                        而新版本可能使用不同的前缀或表名格式。
+                    &lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- 解决方案 --&gt;
+            &lt;div class="section"&gt;
+                &lt;h2&gt;&lt;span&gt;2&lt;/span&gt; 解决方案&lt;/h2&gt;
+                &lt;div class="section-content"&gt;
+                    &lt;div class="tabs"&gt;
+                        &lt;button class="tab-btn active" onclick="showTab('tab1')"&gt;查看所有表&lt;/button&gt;
+                        &lt;button class="tab-btn" onclick="showTab('tab2')"&gt;使用正确表名&lt;/button&gt;
+                        &lt;button class="tab-btn" onclick="showTab('tab3')"&gt;安全查询&lt;/button&gt;
+                    &lt;/div&gt;
+
+                    &lt;div id="tab1" class="tab-content active"&gt;
+                        &lt;h3 style="margin-bottom: 15px; color: #212529;"&gt;方案一：查询数据库中所有表&lt;/h3&gt;
+                        
+                        &lt;p style="margin-bottom: 15px;"&gt;首先，查看您数据库中实际存在哪些表：&lt;/p&gt;
+                        
+                        &lt;div class="demo-card"&gt;
+                            &lt;h3&gt;STL 标签查询所有表&lt;/h3&gt;
+                            &lt;div class="code-block"&gt;
+&lt;span class="code-comment"&gt;&lt;!-- 适用于 MySQL --&gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContents connectionStringName="ConnectionString"&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;stl:queryString&amp;gt;&lt;/span&gt;
+      SHOW TABLES
+    &lt;span class="code-keyword"&gt;&amp;lt;/stl:queryString&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;stl:each&amp;gt;&lt;/span&gt;
+      &lt;span class="code-keyword"&gt;&amp;lt;div&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="0"&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;/stl:each&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;/stl:sqlContents&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;/stl:dynamic&amp;gt;&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="demo-card"&gt;
+                            &lt;h3&gt;PostgreSQL 查询所有表&lt;/h3&gt;
+                            &lt;div class="code-block"&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContents connectionStringName="ConnectionString"&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;stl:queryString&amp;gt;&lt;/span&gt;
+      SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+    &lt;span class="code-keyword"&gt;&amp;lt;/stl:queryString&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;stl:each&amp;gt;&lt;/span&gt;
+      &lt;span class="code-keyword"&gt;&amp;lt;div&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="tablename"&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;/stl:each&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;/stl:sqlContents&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;/stl:dynamic&amp;gt;&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+
+                    &lt;div id="tab2" class="tab-content"&gt;
+                        &lt;h3 style="margin-bottom: 15px; color: #212529;"&gt;方案二：使用正确的表名&lt;/h3&gt;
+                        
+                        &lt;p style="margin-bottom: 15px;"&gt;根据查询到的表名，使用正确的表名进行查询。SSCMS 7.0+ 可能使用以下表名：&lt;/p&gt;
+                        
+                        &lt;table class="table-example"&gt;
+                            &lt;thead&gt;
+                                &lt;tr&gt;
+                                    &lt;th&gt;旧表名 (SSCMS 6.x)&lt;/th&gt;
+                                    &lt;th&gt;新表名 (SSCMS 7.x)&lt;/th&gt;
+                                    &lt;th&gt;说明&lt;/th&gt;
+                                &lt;/tr&gt;
+                            &lt;/thead&gt;
+                            &lt;tbody&gt;
+                                &lt;tr&gt;
+                                    &lt;td&gt;&lt;code&gt;siteserver_Administrator&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;&lt;code&gt;sscms_Administrator&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;管理员表&lt;/td&gt;
+                                &lt;/tr&gt;
+                                &lt;tr&gt;
+                                    &lt;td&gt;&lt;code&gt;siteserver_User&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;&lt;code&gt;sscms_User&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;用户表&lt;/td&gt;
+                                &lt;/tr&gt;
+                                &lt;tr&gt;
+                                    &lt;td&gt;&lt;code&gt;siteserver_Site&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;&lt;code&gt;sscms_Site&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;站点表&lt;/td&gt;
+                                &lt;/tr&gt;
+                                &lt;tr&gt;
+                                    &lt;td&gt;&lt;code&gt;siteserver_Channel&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;&lt;code&gt;sscms_Channel&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;栏目表&lt;/td&gt;
+                                &lt;/tr&gt;
+                                &lt;tr&gt;
+                                    &lt;td&gt;&lt;code&gt;siteserver_Content&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;&lt;code&gt;model_Content&lt;/code&gt;&lt;/td&gt;
+                                    &lt;td&gt;内容表&lt;/td&gt;
+                                &lt;/tr&gt;
+                            &lt;/tbody&gt;
+                        &lt;/table&gt;
+
+                        &lt;div class="demo-card"&gt;
+                            &lt;h3&gt;正确的管理员表查询&lt;/h3&gt;
+                            &lt;div class="code-block"&gt;
+&lt;span class="code-comment"&gt;&lt;!-- 尝试不同的表名 --&gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContents connectionStringName="ConnectionString"&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;stl:queryString&amp;gt;&lt;/span&gt;
+      SELECT * FROM sscms_Administrator
+    &lt;span class="code-keyword"&gt;&amp;lt;/stl:queryString&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;stl:each&amp;gt;&lt;/span&gt;
+      &lt;span class="code-keyword"&gt;&amp;lt;div&amp;gt;&lt;/span&gt;
+        用户：&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="UserName"&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;br&amp;gt;&lt;/span&gt;
+      &lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;/stl:each&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;/stl:sqlContents&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;/stl:dynamic&amp;gt;&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+
+                    &lt;div id="tab3" class="tab-content"&gt;
+                        &lt;h3 style="margin-bottom: 15px; color: #212529;"&gt;方案三：安全查询方式&lt;/h3&gt;
+                        
+                        &lt;p style="margin-bottom: 15px;"&gt;使用安全的方式查询，避免直接使用硬编码的表名：&lt;/p&gt;
+                        
+                        &lt;div class="demo-card"&gt;
+                            &lt;h3&gt;使用STL内置标签查询管理员（推荐）&lt;/h3&gt;
+                            &lt;div class="code-block"&gt;
+&lt;span class="code-comment"&gt;&lt;!-- 使用管理员标签 --&gt;&lt;/span&gt;
+&lt;span class="code-comment"&gt;&lt;!-- 查看管理员信息 --&gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;stl:if testType="IsAdminLogined"&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;stl:yes&amp;gt;&lt;/span&gt;
+    当前管理员：&lt;span class="code-keyword"&gt;&amp;lt;stl:admin type="UserName"&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;br&amp;gt;&lt;/span&gt;
+    管理员ID：&lt;span class="code-keyword"&gt;&amp;lt;stl:admin type="Id"&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;/stl:yes&amp;gt;&lt;/span&gt;
+  &lt;span class="code-keyword"&gt;&amp;lt;stl:no&amp;gt;&lt;/span&gt;
+    未登录
+  &lt;span class="code-keyword"&gt;&amp;lt;/stl:no&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;/stl:if&amp;gt;&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+
+                        &lt;div class="demo-card"&gt;
+                            &lt;h3&gt;使用REST API查询（最安全）&lt;/h3&gt;
+                            &lt;div class="code-block"&gt;
+&lt;span class="code-comment"&gt;&lt;!-- 使用API而非直接SQL --&gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;script&amp;gt;&lt;/span&gt;
+async function loadAdministrators() {
+    try {
+        const response = await fetch('/api/v1/administrators', {
+            headers: {
+                'X-SS-API-KEY': '您的API密钥'
+            }
+        });
+        const data = await response.json();
+        
+        console.log('管理员列表:', data);
+    } catch (error) {
+        console.error('加载失败:', error);
+    }
+}
+&lt;span class="code-keyword"&gt;&amp;lt;/script&amp;gt;&lt;/span&gt;
+                            &lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- 完整示例 --&gt;
+            &lt;div class="section"&gt;
+                &lt;h2&gt;&lt;span&gt;3&lt;/span&gt; 完整的调试页面示例&lt;/h2&gt;
+                &lt;div class="section-content"&gt;
+                    &lt;p style="margin-bottom: 15px; color: #495057;"&gt;将以下代码保存为 &lt;code&gt;debug-db.html&lt;/code&gt; 并上传到SSCMS进行调试：&lt;/p&gt;
+                    
+                    &lt;div class="code-block"&gt;
+&lt;span class="code-comment"&gt;&lt;!-- 数据库调试页面 --&gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;!DOCTYPE html&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;head&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;meta charset="UTF-8"&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;title&amp;gt;&lt;/span&gt;SSCMS 数据库调试&lt;span class="code-keyword"&gt;&amp;lt;/title&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;style&amp;gt;&lt;/span&gt;
+        body { font-family: Arial, sans-serif; padding: 30px; }
+        .box { background: #f8f9fa; padding: 20px; margin: 15px 0; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #667eea; color: white; }
+        .success { background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; }
+    &lt;span class="code-keyword"&gt;&amp;lt;/style&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;/head&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;body&amp;gt;&lt;/span&gt;
+
+    &lt;span class="code-keyword"&gt;&amp;lt;h1&amp;gt;&lt;/span&gt;SSCMS 数据库表检测工具&lt;span class="code-keyword"&gt;&amp;lt;/h1&amp;gt;&lt;/span&gt;
+
+    &lt;span class="code-keyword"&gt;&amp;lt;div class="box"&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;h2&amp;gt;&lt;/span&gt;1. 查看所有数据库表&lt;span class="code-keyword"&gt;&amp;lt;/h2&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContents connectionStringName="ConnectionString"&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;stl:queryString&amp;gt;&lt;/span&gt;
+                    SELECT table_name FROM information_schema.tables 
+                    WHERE table_schema = current_database()
+                &lt;span class="code-keyword"&gt;&amp;lt;/stl:queryString&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;table&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;th&amp;gt;&lt;/span&gt;序号&lt;span class="code-keyword"&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;th&amp;gt;&lt;/span&gt;表名&lt;span class="code-keyword"&gt;&amp;lt;/th&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;stl:each&amp;gt;&lt;/span&gt;
+                        &lt;span class="code-keyword"&gt;&amp;lt;tr&amp;gt;&lt;/span&gt;
+                            &lt;span class="code-keyword"&gt;&amp;lt;td&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="__i__"&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
+                            &lt;span class="code-keyword"&gt;&amp;lt;td&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="table_name"&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/td&amp;gt;&lt;/span&gt;
+                        &lt;span class="code-keyword"&gt;&amp;lt;/tr&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;/stl:each&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;/table&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;/stl:sqlContents&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;/stl:dynamic&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+
+    &lt;span class="code-keyword"&gt;&amp;lt;div class="box"&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;h2&amp;gt;&lt;/span&gt;2. 检查管理员表是否存在&lt;span class="code-keyword"&gt;&amp;lt;/h2&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;p&amp;gt;&lt;/span&gt;尝试查询不同的管理员表名：&lt;span class="code-keyword"&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+        
+        &lt;span class="code-comment"&gt;&lt;!-- 尝试 siteserver_Administrator --&gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;p&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;strong&amp;gt;&lt;/span&gt;尝试 1: siteserver_Administrator&lt;span class="code-keyword"&gt;&amp;lt;/strong&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;stl:try&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContents connectionStringName="ConnectionString"&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;stl:queryString&amp;gt;&lt;/span&gt;
+                        SELECT COUNT(*) as count FROM siteserver_Administrator
+                    &lt;span class="code-keyword"&gt;&amp;lt;/stl:queryString&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;div class="success"&amp;gt;&lt;/span&gt;✓ 表存在！记录数：&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="count"&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;/stl:sqlContents&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;/stl:dynamic&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;stl:catch&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;div class="error"&amp;gt;&lt;/span&gt;✗ 表不存在&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;/stl:catch&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;/stl:try&amp;gt;&lt;/span&gt;
+
+        &lt;span class="code-comment"&gt;&lt;!-- 尝试 sscms_Administrator --&gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;p&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;strong&amp;gt;&lt;/span&gt;尝试 2: sscms_Administrator&lt;span class="code-keyword"&gt;&amp;lt;/strong&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;stl:try&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContents connectionStringName="ConnectionString"&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;stl:queryString&amp;gt;&lt;/span&gt;
+                        SELECT COUNT(*) as count FROM sscms_Administrator
+                    &lt;span class="code-keyword"&gt;&amp;lt;/stl:queryString&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;div class="success"&amp;gt;&lt;/span&gt;✓ 表存在！记录数：&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="count"&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;/stl:sqlContents&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;/stl:dynamic&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;stl:catch&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;div class="error"&amp;gt;&lt;/span&gt;✗ 表不存在&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;/stl:catch&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;/stl:try&amp;gt;&lt;/span&gt;
+
+        &lt;span class="code-comment"&gt;&lt;!-- 尝试 Administrator --&gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;p&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;strong&amp;gt;&lt;/span&gt;尝试 3: Administrator&lt;span class="code-keyword"&gt;&amp;lt;/strong&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;stl:try&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContents connectionStringName="ConnectionString"&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;stl:queryString&amp;gt;&lt;/span&gt;
+                        SELECT COUNT(*) as count FROM Administrator
+                    &lt;span class="code-keyword"&gt;&amp;lt;/stl:queryString&amp;gt;&lt;/span&gt;
+                    &lt;span class="code-keyword"&gt;&amp;lt;div class="success"&amp;gt;&lt;/span&gt;✓ 表存在！记录数：&lt;span class="code-keyword"&gt;&amp;lt;stl:sqlContent type="count"&amp;gt;&lt;/span&gt;&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;/stl:sqlContents&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;/stl:dynamic&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;stl:catch&amp;gt;&lt;/span&gt;
+                &lt;span class="code-keyword"&gt;&amp;lt;div class="error"&ampgt;&lt;/span&gt;✗ 表不存在&lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+            &lt;span class="code-keyword"&gt;&amp;lt;/stl:catch&amp;gt;&lt;/span&gt;
+        &lt;span class="code-keyword"&gt;&amp;lt;/stl:try&amp;gt;&lt;/span&gt;
+    &lt;span class="code-keyword"&gt;&amp;lt;/div&amp;gt;&lt;/span&gt;
+
+&lt;span class="code-keyword"&gt;&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;span class="code-keyword"&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- 总结 --&gt;
+            &lt;div class="section"&gt;
+                &lt;h2&gt;&lt;span&gt;4&lt;/span&gt; 最佳实践&lt;/h2&gt;
+                &lt;div class="section-content"&gt;
+                    &lt;ul&gt;
+                        &lt;li&gt;&lt;strong&gt;避免直接查询系统表：&lt;/strong&gt;使用STL内置标签或REST API获取数据，而不是直接操作数据库&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;使用动态标签：&lt;/strong&gt;始终将 &lt;code&gt;&amp;lt;stl:sqlContents&amp;gt;&lt;/code&gt; 包裹在 &lt;code&gt;&amp;lt;stl:dynamic&amp;gt;&lt;/code&gt; 中&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;错误处理：&lt;/strong&gt;使用 &lt;code&gt;&amp;lt;stl:try&amp;gt;&lt;/code&gt; 和 &lt;code&gt;&amp;lt;stl:catch&amp;gt;&lt;/code&gt; 处理可能的错误&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;权限控制：&lt;/strong&gt;不要在前台页面暴露敏感的数据库查询&lt;/li&gt;
+                        &lt;li&gt;&lt;strong&gt;版本兼容：&lt;/strong&gt;升级SSCMS前，先在测试环境验证数据库兼容性&lt;/li&gt;
+                    &lt;/ul&gt;
+
+                    &lt;div class="success-box" style="margin-top: 20px;"&gt;
+                        &lt;h4&gt;💡 提示&lt;/h4&gt;
+                        &lt;p&gt;如果您只是想显示一些管理员相关信息，建议使用 &lt;code&gt;&amp;lt;stl:admin&amp;gt;&lt;/code&gt; 标签，这样即使表名变化也不会影响功能！&lt;/p&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;!-- 快速参考 --&gt;
+            &lt;div class="section"&gt;
+                &lt;h2&gt;&lt;span&gt;5&lt;/span&gt; 快速参考&lt;/h2&gt;
+                &lt;div class="section-content"&gt;
+                    &lt;table class="table-example"&gt;
+                        &lt;thead&gt;
+                            &lt;tr&gt;
+                                &lt;th&gt;功能&lt;/th&gt;
+                                &lt;th&gt;推荐方式&lt;/th&gt;
+                                &lt;th&gt;示例代码&lt;/th&gt;
+                            &lt;/tr&gt;
+                        &lt;/thead&gt;
+                        &lt;tbody&gt;
+                            &lt;tr&gt;
+                                &lt;td&gt;获取当前管理员&lt;/td&gt;
+                                &lt;td&gt;&lt;span class="label label-tip"&gt;推荐&lt;/span&gt; STL标签&lt;/td&gt;
+                                &lt;td&gt;&lt;code&gt;&amp;lt;stl:admin type="UserName"&amp;gt;&lt;/code&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td&gt;获取内容列表&lt;/td&gt;
+                                &lt;td&gt;&lt;span class="label label-tip"&gt;推荐&lt;/span&gt; STL标签&lt;/td&gt;
+                                &lt;td&gt;&lt;code&gt;&amp;lt;stl:contents&amp;gt;&lt;/code&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td&gt;用户信息查询&lt;/td&gt;
+                                &lt;td&gt;&lt;span class="label label-tip"&gt;推荐&lt;/span&gt; REST API&lt;/td&gt;
+                                &lt;td&gt;&lt;code&gt;/api/v1/users&lt;/code&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                            &lt;tr&gt;
+                                &lt;td&gt;自定义统计查询&lt;/td&gt;
+                                &lt;td&gt;SQL查询&lt;/td&gt;
+                                &lt;td&gt;&lt;code&gt;&amp;lt;stl:sqlContents&amp;gt;&lt;/code&gt;&lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lt;/tbody&gt;
+                    &lt;/table&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script&gt;
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab =&gt; {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn =&gt; {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        console.log('SSCMS 数据库调试工具已加载');
+        console.log('提示：请将此页面保存为HTML文件并上传到SSCMS进行测试');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
